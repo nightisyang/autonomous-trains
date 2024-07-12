@@ -97,7 +97,8 @@ function generateNodes(n: number): Nodes[] {
 function generateEdges(nodes: Nodes[]) {
   const arr: Edge[] = [];
 
-  for (let i = 0; i < nodes.length; i++) {
+  // no edge for last node
+  for (let i = 0; i < nodes.length - 1; i++) {
     const name = String.fromCharCode(i + "A".charCodeAt(0));
     const edge = new Edge(name, nodes[i], nodes[i + 1], i);
     arr.push(edge);
