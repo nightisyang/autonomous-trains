@@ -100,7 +100,7 @@ function generateEdges(nodes) {
 }
 function travelEdge(startingNode, index, listOfEdges, listOfPackages) {
     // base case
-    if (index === listOfNodes.length - 1) {
+    if (index >= listOfNodes.length) {
         console.log("end of node list");
         return;
     }

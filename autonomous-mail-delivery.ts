@@ -168,7 +168,7 @@ function travelEdge(
   listOfPackages: Package[]
 ) {
   // base case
-  if (index === listOfNodes.length - 1) {
+  if (index >= listOfNodes.length) {
     console.log("end of node list");
     return;
   }
