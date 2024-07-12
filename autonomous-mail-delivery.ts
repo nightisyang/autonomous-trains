@@ -1,3 +1,5 @@
+import { Nodes, Train, Edge, Package } from "./Classes";
+
 // write a program to control a network of autonomous mail delivery trains.
 
 // each instance of this problem has:
@@ -15,65 +17,7 @@
 //
 //
 
-class Nodes {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
 // is the list of nodes circular? i.e. first node and last node linked?
-class Edge {
-  name: string;
-  node1: Nodes;
-  node2: Nodes;
-  journeyTimeInMinutes: number;
-
-  constructor(
-    name: string,
-    node1: Nodes,
-    node2: Nodes,
-    journeyTimeInMinutes: number
-  ) {
-    this.name = name;
-    this.node1 = node1;
-    this.node2 = node2;
-    this.journeyTimeInMinutes = journeyTimeInMinutes;
-  }
-}
-
-class Train {
-  trainName: string;
-  capacityInKg: number;
-  startingNode: Nodes;
-
-  constructor(trainName: string, capacityInKg: number, startingNode: Nodes) {
-    this.trainName = trainName;
-    this.capacityInKg = capacityInKg;
-    this.startingNode = startingNode;
-  }
-}
-
-class Package {
-  packageName: string;
-  weightInKg: number;
-  startingNode: Nodes;
-  destinationNode: Nodes;
-
-  constructor(
-    packageName: string,
-    weightInKg: number,
-    startingNode: Nodes,
-    destinationNode: Nodes
-  ) {
-    this.packageName = packageName;
-    this.weightInKg = weightInKg;
-    this.startingNode = startingNode;
-    this.destinationNode = destinationNode;
-  }
-}
-
 function main(
   listOfNodes: Nodes[],
   listOfEdges: Edge[],
@@ -131,9 +75,9 @@ function findPackageIndexInNode(
   listOfPackages: Package[]
 ): Package | null {
   for (let i = 0; i < listOfPackages.length; i++) {
-    const package = listOfPackages[i];
-    if (package.startingNode.name === currentNode.name) {
-      return package;
+    const currPackage = listOfPackages[i];
+    if (currPackage.startingNode.name === currentNode.name) {
+      return currPackage;
     }
   }
 
@@ -176,9 +120,9 @@ function travelEdge(
   console.log("travelling at index:", index);
 
   // pre
-  const package = findPackageIndexInNode(startingNode, listOfPackages);
-  if (package) {
-    console.log("package found!", package);
+  const currPackage = findPackageIndexInNode(startingNode, listOfPackages);
+  if (currPackage) {
+    console.log("package found!", currPackage);
   }
 
   // recurse
@@ -202,8 +146,8 @@ function generatePackages(n: number, nodes: Nodes[]): Package[] {
   const arr: Package[] = [];
 
   for (let i = 0; i < n; i++) {
-    const package = new Package("Package" + i, 20, nodes[2], nodes[4]);
-    arr.push(package);
+    const newPackage = new Package("Package" + i, 20, nodes[2], nodes[4]);
+    arr.push(newPackage);
   }
 
   return arr;
