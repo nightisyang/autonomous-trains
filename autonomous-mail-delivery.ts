@@ -10,14 +10,15 @@ import { Nodes, Train, Edge, Package } from "./Classes";
 
 // there is a set of packages in the network, each of which has a weight and start off located at a node, and each of which has a destination node
 //
-// node -- undirected edge, cost to travel in seconds -- node
+// node -- undirected edge, cost to travel in minutes -- node
 //
-// trains travel network, has weight capacity, can travel in either direction, no limit train per edge --> concurrency?
+// trains travel network, has weight capacity, can travel in either direction, no limit train per edge/node --> concurrency?
 // packages, has weight, has a source location and end destination
 //
 //
 
 // is the list of nodes circular? i.e. first node and last node linked?
+// likely not if the given example has 3 nodes, 2 edge
 function main(
   listOfNodes: Nodes[],
   listOfEdges: Edge[],
