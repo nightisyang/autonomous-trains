@@ -214,4 +214,3 @@ const listOfEdges = generateEdges(listOfNodes);
 const listOfTrains = generateTrains(1, listOfNodes);
 const listOfPackages = generatePackages(1, listOfNodes);
 main(listOfNodes, listOfEdges, listOfTrains, listOfPackages);
-touch.gitignore;
