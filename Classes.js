@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.Package = exports.Train = exports.Edge = exports.Nodes = void 0;
 var Nodes = /** @class */ (function () {
     function Nodes(name) {

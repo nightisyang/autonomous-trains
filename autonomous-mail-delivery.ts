@@ -1,5 +1,10 @@
 import { Nodes, Train, Edge, Package } from "./Classes";
 
+interface IEdgeAndEdgeIndex {
+  edge: Edge;
+  index: number;
+}
+
 // write a program to control a network of autonomous mail delivery trains.
 
 // each instance of this problem has:
@@ -51,7 +56,7 @@ function main(
 
     // for now, assign 1 train to 1 package
     const targetPackage = listOfPackages[0];
-    start(train.startingNode, listOfEdges, targetPackage);
+    start(train, targetPackage, listOfEdges);
   }
 }
 
@@ -74,41 +79,75 @@ function findIndex(
   return targetIndex;
 }
 
-function start(
-  startingNode: Nodes,
-  listOfEdges: Edge[],
-  targetPackage: Package
-) {
+function start(train: Train, targetPackage: Package, listOfEdges: Edge[]) {
   console.log("start");
-  const leftEdge = findEdgeOfNode(
-    targetPackage.startingNode,
+
+  const { left: trainLeftEdge, right: trainRightEdge } =
+    findLeftAndRightNodeEdges(train.startingNode, listOfEdges);
+  console.log(trainLeftEdge, trainRightEdge);
+  const trainRoute = findLeftAndRightRouteToNode(
+    trainLeftEdge,
+    trainRightEdge,
     listOfEdges,
-    "left"
-  );
-  const rightEdge = findEdgeOfNode(
-    targetPackage.startingNode,
-    listOfEdges,
-    "right"
+    targetPackage.startingNode
   );
 
-  console.log("left", leftEdge);
-  console.log("right", rightEdge);
+  console.log("trainRoute", trainRoute);
 
-  const leftRoute = findRouteToPackage(
-    leftEdge,
+  // route of package startingNode to package destinationNode
+
+  const { left: packageLeftEdge, right: packageRightEdge } =
+    findLeftAndRightNodeEdges(targetPackage.startingNode, listOfEdges);
+
+  const packageRoute = findLeftAndRightRouteToNode(
+    packageLeftEdge,
+    packageRightEdge,
     listOfEdges,
-    targetPackage.destinationNode,
-    "left"
-  );
-  const rightRoute = findRouteToPackage(
-    rightEdge,
-    listOfEdges,
-    targetPackage.destinationNode,
-    "right"
+    targetPackage.destinationNode
   );
 
-  console.log("leftRoute", leftRoute);
-  console.log("rightRoute", rightRoute);
+  console.log("packageRoute", packageRoute);
+}
+
+function findLeftAndRightNodeEdges(
+  startingNode: Nodes,
+  listOfEdges: Edge[]
+): {
+  left: IEdgeAndEdgeIndex | null;
+  right: IEdgeAndEdgeIndex | null;
+} {
+  const left = findEdgeOfNode(startingNode, listOfEdges, "left");
+  const right = findEdgeOfNode(startingNode, listOfEdges, "right");
+
+  return { left, right };
+}
+
+function findLeftAndRightRouteToNode(
+  leftEdge: IEdgeAndEdgeIndex | null,
+  rightEdge: IEdgeAndEdgeIndex | null,
+  listOfEdges: Edge[],
+  targetNode: Nodes
+): Edge[] | null {
+  const leftRoute = leftEdge
+    ? findRouteToNode(
+        leftEdge.edge,
+        leftEdge.index,
+        listOfEdges,
+        targetNode,
+        "left"
+      )
+    : null;
+  const rightRoute = rightEdge
+    ? findRouteToNode(
+        rightEdge.edge,
+        rightEdge.index,
+        listOfEdges,
+        targetNode,
+        "right"
+      )
+    : null;
+
+  return leftRoute ?? rightRoute;
 }
 
 // can incorporate binary search?
@@ -121,50 +160,29 @@ function findEdgeOfNode(
   startingNode: Nodes,
   listOfEdges: Edge[],
   direction: "left" | "right"
-): Edge | null {
+): IEdgeAndEdgeIndex | null {
   for (let i = 0; i < listOfEdges.length - 1; i++) {
     const edge = listOfEdges[i];
     if (direction === "left") {
-      if (edge.node1.name === startingNode.name) {
-        return edge;
+      if (edge.node2.name === startingNode.name) {
+        return { edge, index: i };
       }
     }
 
     if (direction === "right") {
-      if (edge.node2.name === startingNode.name) {
-        return edge;
+      if (edge.node1.name === startingNode.name) {
+        return { edge, index: i };
       }
     }
   }
   return null;
 }
 
-function findNextEdgeOfNode(
-  startingNode: Nodes,
-  listOfEdges: Edge[],
-  direction: "left" | "right"
-): Edge | null {
-  for (let i = 0; i < listOfEdges.length - 1; i++) {
-    const edge = listOfEdges[i];
-    if (direction === "left") {
-      if (edge.node2.name === startingNode.name) {
-        return edge;
-      }
-    }
-
-    if (direction === "right") {
-      if (edge.node1.name === startingNode.name) {
-        return edge;
-      }
-    }
-  }
-  return null;
-}
-
-function findRouteToPackage(
+function findRouteToNode(
   startingEdge: Edge | null,
+  startingEdgeIndex: number,
   listOfEdges: Edge[],
-  packageNodeLocation: Nodes,
+  targetNode: Nodes,
   direction: "left" | "right"
 ): Edge[] | null {
   if (!startingEdge) {
@@ -175,30 +193,30 @@ function findRouteToPackage(
   console.log("going ", direction);
   // start from train startingNode to pickUpNodeLocation
   if (
-    (direction === "left" && startingEdge.node1 === packageNodeLocation) ||
-    (direction === "right" && startingEdge.node2 === packageNodeLocation)
+    (direction === "left" && startingEdge.node1 === targetNode) ||
+    (direction === "right" && startingEdge.node2 === targetNode)
   ) {
-    console.log("package found");
-    return [];
+    console.log("targetNode found");
+    return [startingEdge];
   }
 
-  //
   // pre
-  const node = direction === "left" ? startingEdge.node1 : startingEdge.node2;
-  const nextEdge = findNextEdgeOfNode(node, listOfEdges, direction);
+  const nextEdgeIndex =
+    direction === "left" ? startingEdgeIndex - 1 : startingEdgeIndex + 1;
+  const nextEdge = listOfEdges[nextEdgeIndex];
 
   // recurse
-  const found = findRouteToPackage(
+  const found = findRouteToNode(
     nextEdge,
+    nextEdgeIndex,
     listOfEdges,
-    packageNodeLocation,
+    targetNode,
     direction
   );
 
   // post
   if (found) {
     found.push(startingEdge);
-    console.log(found);
   }
 
   return found;
