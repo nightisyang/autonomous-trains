@@ -99,9 +99,12 @@ function findRouteToNode(startingEdge, startingEdgeIndex, listOfEdges, targetNod
     }
     console.log("going ", direction);
     // start from train startingNode to pickUpNodeLocation
-    if ((direction === "left" && startingEdge.node1 === targetNode) ||
-        (direction === "right" && startingEdge.node2 === targetNode)) {
-        console.log("targetNode found");
+    if (startingEdge.node1 === targetNode ||
+        startingEdge.node2 === targetNode
+    // (direction === "left" && startingEdge.node2 === targetNode) ||
+    // (direction === "right" && startingEdge.node1 === targetNode)
+    ) {
+        console.log("targetNode found", "in ", direction, startingEdge, targetNode);
         return [startingEdge];
     }
     // pre
@@ -177,5 +180,8 @@ function generatePackages(n, nodes) {
 var listOfNodes = generateNodes(10);
 var listOfEdges = generateEdges(listOfNodes);
 var listOfTrains = generateTrains(1, listOfNodes);
-var listOfPackages = generatePackages(1, listOfNodes);
+// const listOfPackages = generatePackages(1, listOfNodes);
+var listOfPackages = [
+    new Classes_1.Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
+];
 main(listOfNodes, listOfEdges, listOfTrains, listOfPackages);

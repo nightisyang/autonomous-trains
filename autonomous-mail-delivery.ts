@@ -193,10 +193,12 @@ function findRouteToNode(
   console.log("going ", direction);
   // start from train startingNode to pickUpNodeLocation
   if (
-    (direction === "left" && startingEdge.node1 === targetNode) ||
-    (direction === "right" && startingEdge.node2 === targetNode)
+    startingEdge.node1 === targetNode ||
+    startingEdge.node2 === targetNode
+    // (direction === "left" && startingEdge.node2 === targetNode) ||
+    // (direction === "right" && startingEdge.node1 === targetNode)
   ) {
-    console.log("targetNode found");
+    console.log("targetNode found", "in ", direction, startingEdge, targetNode);
     return [startingEdge];
   }
 
@@ -309,5 +311,10 @@ function generatePackages(n: number, nodes: Nodes[]): Package[] {
 const listOfNodes = generateNodes(10);
 const listOfEdges = generateEdges(listOfNodes);
 const listOfTrains = generateTrains(1, listOfNodes);
-const listOfPackages = generatePackages(1, listOfNodes);
+// const listOfPackages = generatePackages(1, listOfNodes);
+
+const listOfPackages = [
+  new Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
+];
+
 main(listOfNodes, listOfEdges, listOfTrains, listOfPackages);
