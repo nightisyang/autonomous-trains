@@ -48,7 +48,10 @@ function main(
     const train = listOfTrains[i];
     const index = findIndex(train.startingNode, listOfNodes, listOfEdges);
     console.log("train", train, index);
-    travelEdge(train.startingNode, index, listOfEdges, listOfPackages);
+
+    // for now, assign 1 train to 1 package
+    const targetPackage = listOfPackages[0];
+    start(train.startingNode, listOfEdges, targetPackage);
   }
 }
 
@@ -71,6 +74,136 @@ function findIndex(
   return targetIndex;
 }
 
+function start(
+  startingNode: Nodes,
+  listOfEdges: Edge[],
+  targetPackage: Package
+) {
+  console.log("start");
+  const leftEdge = findEdgeOfNode(
+    targetPackage.startingNode,
+    listOfEdges,
+    "left"
+  );
+  const rightEdge = findEdgeOfNode(
+    targetPackage.startingNode,
+    listOfEdges,
+    "right"
+  );
+
+  console.log("left", leftEdge);
+  console.log("right", rightEdge);
+
+  const leftRoute = findRouteToPackage(
+    leftEdge,
+    listOfEdges,
+    targetPackage.destinationNode,
+    "left"
+  );
+  const rightRoute = findRouteToPackage(
+    rightEdge,
+    listOfEdges,
+    targetPackage.destinationNode,
+    "right"
+  );
+
+  console.log("leftRoute", leftRoute);
+  console.log("rightRoute", rightRoute);
+}
+
+// can incorporate binary search?
+//             Starting Node
+//       Left Edge      Right Edge
+//    Left Edge             Right Edge
+// Package                      No Package
+
+function findEdgeOfNode(
+  startingNode: Nodes,
+  listOfEdges: Edge[],
+  direction: "left" | "right"
+): Edge | null {
+  for (let i = 0; i < listOfEdges.length - 1; i++) {
+    const edge = listOfEdges[i];
+    if (direction === "left") {
+      if (edge.node1.name === startingNode.name) {
+        return edge;
+      }
+    }
+
+    if (direction === "right") {
+      if (edge.node2.name === startingNode.name) {
+        return edge;
+      }
+    }
+  }
+  return null;
+}
+
+function findNextEdgeOfNode(
+  startingNode: Nodes,
+  listOfEdges: Edge[],
+  direction: "left" | "right"
+): Edge | null {
+  for (let i = 0; i < listOfEdges.length - 1; i++) {
+    const edge = listOfEdges[i];
+    if (direction === "left") {
+      if (edge.node2.name === startingNode.name) {
+        return edge;
+      }
+    }
+
+    if (direction === "right") {
+      if (edge.node1.name === startingNode.name) {
+        return edge;
+      }
+    }
+  }
+  return null;
+}
+
+function findRouteToPackage(
+  startingEdge: Edge | null,
+  listOfEdges: Edge[],
+  packageNodeLocation: Nodes,
+  direction: "left" | "right"
+): Edge[] | null {
+  if (!startingEdge) {
+    console.log("end");
+    return null;
+  }
+
+  console.log("going ", direction);
+  // start from train startingNode to pickUpNodeLocation
+  if (
+    (direction === "left" && startingEdge.node1 === packageNodeLocation) ||
+    (direction === "right" && startingEdge.node2 === packageNodeLocation)
+  ) {
+    console.log("package found");
+    return [];
+  }
+
+  //
+  // pre
+  const node = direction === "left" ? startingEdge.node1 : startingEdge.node2;
+  const nextEdge = findNextEdgeOfNode(node, listOfEdges, direction);
+
+  // recurse
+  const found = findRouteToPackage(
+    nextEdge,
+    listOfEdges,
+    packageNodeLocation,
+    direction
+  );
+
+  // post
+  if (found) {
+    found.push(startingEdge);
+    console.log(found);
+  }
+
+  return found;
+}
+
 function findPackageIndexInNode(
   currentNode: Nodes,
   listOfPackages: Package[]
@@ -88,7 +221,7 @@ function findPackageIndexInNode(
 function generateNodes(n: number): Nodes[] {
   const arr: Nodes[] = [];
   for (let i = 0; i < n; i++) {
-    const node = new Nodes("Node" + i);
+    const node = new Nodes("Station" + i);
     arr.push(node);
   }
 
@@ -99,8 +232,8 @@ function generateEdges(nodes: Nodes[]) {
   const arr: Edge[] = [];
 
   // no edge for last node
-  for (let i = 0; i < nodes.length - 1; i++) {
-    const name = String.fromCharCode(i + "A".charCodeAt(0));
+  for (let i = 0; i < nodes.length; i++) {
+    const name = "E" + i;
     const edge = new Edge(name, nodes[i], nodes[i + 1], i);
     arr.push(edge);
   }

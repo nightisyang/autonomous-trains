@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Classes_1 = require("./Classes");
 // write a program to control a network of autonomous mail delivery trains.
 // each instance of this problem has:
 // a network, consisting of a set of nodes, each described by a string name
@@ -5,45 +8,14 @@
 // a set of trains in the network, each of which has a maximum total weight it can carry. all trains starts off empty and each train has a node where it starts off.
 // there is a set of packages in the network, each of which has a weight and start off located at a node, and each of which has a destination node
 //
-// node -- undirected edge, cost to travel in seconds -- node
+// node -- undirected edge, cost to travel in minutes -- node
 //
-// trains travel network, has weight capacity, can travel in either direction, no limit train per edge --> concurrency?
+// trains travel network, has weight capacity, can travel in either direction, no limit train per edge/node --> concurrency?
 // packages, has weight, has a source location and end destination
 //
 //
-var Nodes = /** @class */ (function () {
-    function Nodes(name) {
-        this.name = name;
-    }
-    return Nodes;
-}());
 // is the list of nodes circular? i.e. first node and last node linked?
-var Edge = /** @class */ (function () {
-    function Edge(name, node1, node2, journeyTimeInMinutes) {
-        this.name = name;
-        this.node1 = node1;
-        this.node2 = node2;
-        this.journeyTimeInMinutes = journeyTimeInMinutes;
-    }
-    return Edge;
-}());
-var Train = /** @class */ (function () {
-    function Train(trainName, capacityInKg, startingNode) {
-        this.trainName = trainName;
-        this.capacityInKg = capacityInKg;
-        this.startingNode = startingNode;
-    }
-    return Train;
-}());
-var Package = /** @class */ (function () {
-    function Package(packageName, weightInKg, startingNode, destinationNode) {
-        this.packageName = packageName;
-        this.weightInKg = weightInKg;
-        this.startingNode = startingNode;
-        this.destinationNode = destinationNode;
-    }
-    return Package;
-}());
+// likely not if the given example has 3 nodes, 2 edge
 function main(listOfNodes, listOfEdges, listOfTrains, listOfPackages) {
     console.log("listOfNodes", listOfNodes, "listOfEdges", listOfEdges, "listOfTrains", listOfTrains, "listOfPackages", listOfPackages);
     // train needs to know which direction to travel
@@ -58,7 +30,8 @@ function main(listOfNodes, listOfEdges, listOfTrains, listOfPackages) {
         var train = listOfTrains[i];
         var index = findIndex(train.startingNode, listOfNodes, listOfEdges);
         console.log("train", train, index);
-        travelEdge(train.startingNode, index, listOfEdges, listOfPackages);
+        var targetPackage = listOfPackages[0];
+        start(train.startingNode, listOfEdges, targetPackage);
     }
 }
 function findIndex(targetNode, listOfNodes, listOfEdges) {
@@ -72,11 +45,87 @@ function findIndex(targetNode, listOfNodes, listOfEdges) {
     }
     return targetIndex;
 }
+function start(startingNode, listOfEdges, targetPackage) {
+    console.log("start");
+    var leftEdge = findEdgeOfNode(targetPackage.startingNode, listOfEdges, "left");
+    var rightEdge = findEdgeOfNode(targetPackage.startingNode, listOfEdges, "right");
+    console.log("left", leftEdge);
+    console.log("right", rightEdge);
+    var leftRoute = findRouteToPackage(leftEdge, listOfEdges, targetPackage.destinationNode, "left");
+    var rightRoute = findRouteToPackage(rightEdge, listOfEdges, targetPackage.destinationNode, "right");
+    console.log("leftRoute", leftRoute);
+    console.log("rightRoute", rightRoute);
+}
+// can incorporate binary search?
+//             Starting Node
+//       Left Edge      Right Edge
+//    Left Edge             Right Edge
+// Package                      No Package
+function findEdgeOfNode(startingNode, listOfEdges, direction) {
+    for (var i = 0; i < listOfEdges.length - 1; i++) {
+        var edge = listOfEdges[i];
+        if (direction === "left") {
+            if (edge.node1.name === startingNode.name) {
+                return edge;
+            }
+        }
+        if (direction === "right") {
+            if (edge.node2.name === startingNode.name) {
+                return edge;
+            }
+        }
+    }
+    return null;
+}
+function findNextEdgeOfNode(startingNode, listOfEdges, direction) {
+    for (var i = 0; i < listOfEdges.length - 1; i++) {
+        var edge = listOfEdges[i];
+        if (direction === "left") {
+            if (edge.node2.name === startingNode.name) {
+                return edge;
+            }
+        }
+        if (direction === "right") {
+            if (edge.node1.name === startingNode.name) {
+                return edge;
+            }
+        }
+    }
+    return null;
+}
+function findRouteToPackage(startingEdge, listOfEdges, packageNodeLocation, direction) {
+    if (!startingEdge) {
+        console.log("end");
+        return null;
+    }
+    console.log("going ", direction);
+    // start from train startingNode to pickUpNodeLocation
+    if ((direction === "left" && startingEdge.node1 === packageNodeLocation) ||
+        (direction === "right" && startingEdge.node2 === packageNodeLocation)) {
+        console.log("package found");
+        return [];
+    }
+    //
+    // pre
+    var node = direction === "left" ? startingEdge.node1 : startingEdge.node2;
+    console.log("before recursing", node);
+    var nextEdge = findNextEdgeOfNode(node, listOfEdges, direction);
+    console.log("nextEdge", nextEdge);
+    // recurse
+    var found = findRouteToPackage(nextEdge, listOfEdges, packageNodeLocation, direction);
+    // post
+    console.log("post recursion", found);
+    if (found) {
+        found.push(startingEdge);
+        console.log(found);
+    }
+    return found;
+}
 function findPackageIndexInNode(currentNode, listOfPackages) {
     for (var i = 0; i < listOfPackages.length; i++) {
-        var package = listOfPackages[i];
-        if (package.startingNode.name === currentNode.name) {
-            return package;
+        var currPackage = listOfPackages[i];
+        if (currPackage.startingNode.name === currentNode.name) {
+            return currPackage;
         }
     }
     return null;
@@ -84,16 +133,17 @@ function findPackageIndexInNode(currentNode, listOfPackages) {
 function generateNodes(n) {
     var arr = [];
     for (var i = 0; i < n; i++) {
-        var node = new Nodes("Node" + i);
+        var node = new Classes_1.Nodes("Station" + i);
         arr.push(node);
     }
     return arr;
 }
 function generateEdges(nodes) {
     var arr = [];
+    // no edge for last node
     for (var i = 0; i < nodes.length; i++) {
-        var name_1 = String.fromCharCode(i + "A".charCodeAt(0));
-        var edge = new Edge(name_1, nodes[i], nodes[i + 1], i);
+        var name_1 = "E" + i;
+        var edge = new Classes_1.Edge(name_1, nodes[i], nodes[i + 1], i);
         arr.push(edge);
     }
     return arr;
@@ -106,9 +156,9 @@ function travelEdge(startingNode, index, listOfEdges, listOfPackages) {
     }
     console.log("travelling at index:", index);
     // pre
-    var package = findPackageIndexInNode(startingNode, listOfPackages);
-    if (package) {
-        console.log("package found!", package);
+    var currPackage = findPackageIndexInNode(startingNode, listOfPackages);
+    if (currPackage) {
+        console.log("package found!", currPackage);
     }
     // recurse
     travelEdge(listOfEdges[index].node2, index + 1, listOfEdges, listOfPackages);
@@ -117,7 +167,7 @@ function travelEdge(startingNode, index, listOfEdges, listOfPackages) {
 function generateTrains(n, nodes) {
     var arr = [];
     for (var i = 0; i < n; i++) {
-        var train = new Train("Train" + 1, 50, nodes[i]);
+        var train = new Classes_1.Train("Train" + 1, 50, nodes[i]);
         arr.push(train);
     }
     return arr;
@@ -125,8 +175,8 @@ function generateTrains(n, nodes) {
 function generatePackages(n, nodes) {
     var arr = [];
     for (var i = 0; i < n; i++) {
-        var package = new Package("Package" + i, 20, nodes[2], nodes[4]);
-        arr.push(package);
+        var newPackage = new Classes_1.Package("Package" + i, 20, nodes[2], nodes[4]);
+        arr.push(newPackage);
     }
     return arr;
 }
