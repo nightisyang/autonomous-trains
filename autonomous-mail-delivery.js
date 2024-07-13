@@ -1,84 +1,67 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 exports.__esModule = true;
 var Classes_1 = require("./Classes");
-// write a program to control a network of autonomous mail delivery trains.
-// each instance of this problem has:
-// a network, consisting of a set of nodes, each described by a string name
-// a set of edges, each of which links two nodes and has an associated journey time in seconds. edges are undirected and any number of trains can travel along any edge in any combination of orders. an edge is uniquely described by a pair of nodes
-// a set of trains in the network, each of which has a maximum total weight it can carry. all trains starts off empty and each train has a node where it starts off.
-// there is a set of packages in the network, each of which has a weight and start off located at a node, and each of which has a destination node
+var Generators_1 = require("./Generators");
 //
-// node -- undirected edge, cost to travel in minutes -- node
-//
+// <node> -- undirected edge, cost to travel in minutes -- <node>
 // trains travel network, has weight capacity, can travel in either direction, no limit train per edge/node --> concurrency?
 // packages, has weight, has a source location and end destination
 //
-//
 // is the list of nodes circular? i.e. first node and last node linked?
 // likely not if the given example has 3 nodes, 2 edge
-function main(listOfNodes, listOfEdges, listOfTrains, listOfPackages) {
-    console.log("listOfNodes", listOfNodes, "listOfEdges", listOfEdges, "listOfTrains", listOfTrains, "listOfPackages", listOfPackages);
-    // train needs to know which direction to travel
-    // train knows where it is, needs to know where is the closest package and if the package is within weight limit
-    // first lets do the simple case
-    // let train travel through the list of nodes in one direction
-    // check if there are packages in the node,
-    // if there is, check if it's within capacity, then deduct capacity
-    // go to destination, determine which direction to travel at current node
-    for (var i = 0; i < listOfTrains.length; i++) {
-        // check if there are any packages
-        var train = listOfTrains[i];
-        var index = findIndex(train.startingNode, listOfNodes, listOfEdges);
-        console.log("train", train, index);
-        // for now, assign 1 train to 1 package
-        var targetPackage = listOfPackages[0];
-        start(train, targetPackage, listOfEdges);
-    }
+// train needs to know which direction to travel -- DONE HANDLED THIS CASE
+// let train travel through the list of nodes in one direction -- SAME AS ABOVE HANDLED
+// go to destination, determine which direction to travel at current node -- SAME AS ABOVE HANDLED
+// TODO:
+// train knows where it is, needs to know where is the closest package and if the package is within weight limit -- Probably needs a function that handles this, see's what packages / trains are available, if the capacity is within limits, calculates who has the shortest cost to get there and assigns to the train
+// check if it's within capacity, then deduct capacity
+function main(listOfEdges, listOfTrains, listOfPackages) {
+    // for now, assign 1 train to 1 package
+    var train = listOfTrains[0];
+    var targetPackage = listOfPackages[0];
+    start(train, targetPackage, listOfEdges);
 }
-function findIndex(targetNode, listOfNodes, listOfEdges) {
-    var targetIndex = 0;
-    // find index of Node
-    for (var i = 0; i < listOfNodes.length; i++) {
-        var currNode = listOfNodes[i];
-        if (targetNode.name === currNode.name) {
-            targetIndex = i;
-        }
-    }
-    return targetIndex;
-}
+//    can incorporate binary search?
+//               Starting Node
+//         Left Edge      Right Edge
+//      Left Edge             Right Edge
+// Package Start/End             No Package
+//
+// need to know which direction to travel, left or right, keep going left or keep going right until target node is found
+// get the left and right edge for a node and travel down the edge to the next node until target node
+// obtain the route from TRAIN START -> PACKAGE START
+// obtain the route from PACKAGE START -> PACKAGE END
+// combine both routes
 function start(train, targetPackage, listOfEdges) {
     console.log("start");
-    var _a = findLeftAndRightNodeEdges(train.startingNode, listOfEdges), trainLeftEdge = _a.left, trainRightEdge = _a.right;
-    console.log(trainLeftEdge, trainRightEdge);
+    // TRAIN START -> PACKAGE START
+    var _a = findLeftAndRightNodeEdges(train.startingNode, listOfEdges), trainLeftEdge = _a.leftEdge, trainRightEdge = _a.rightEdge;
     var trainRoute = findLeftAndRightRouteToNode(trainLeftEdge, trainRightEdge, listOfEdges, targetPackage.startingNode);
-    console.log("trainRoute", trainRoute);
-    // route of package startingNode to package destinationNode
-    var _b = findLeftAndRightNodeEdges(targetPackage.startingNode, listOfEdges), packageLeftEdge = _b.left, packageRightEdge = _b.right;
+    // PACKAGE START -> PACKAGE END
+    var _b = findLeftAndRightNodeEdges(targetPackage.startingNode, listOfEdges), packageLeftEdge = _b.leftEdge, packageRightEdge = _b.rightEdge;
     var packageRoute = findLeftAndRightRouteToNode(packageLeftEdge, packageRightEdge, listOfEdges, targetPackage.destinationNode);
-    console.log("packageRoute", packageRoute);
+    var completeRoute = __spreadArray(__spreadArray([], packageRoute, true), trainRoute, true);
+    console.log(completeRoute);
 }
 function findLeftAndRightNodeEdges(startingNode, listOfEdges) {
-    var left = findEdgeOfNode(startingNode, listOfEdges, "left");
-    var right = findEdgeOfNode(startingNode, listOfEdges, "right");
-    return { left: left, right: right };
+    var leftEdge = findEdgeOfNode(startingNode, listOfEdges, "left");
+    var rightEdge = findEdgeOfNode(startingNode, listOfEdges, "right");
+    return { leftEdge: leftEdge, rightEdge: rightEdge };
 }
-function findLeftAndRightRouteToNode(leftEdge, rightEdge, listOfEdges, targetNode) {
-    var leftRoute = leftEdge
-        ? findRouteToNode(leftEdge.edge, leftEdge.index, listOfEdges, targetNode, "left")
-        : null;
-    var rightRoute = rightEdge
-        ? findRouteToNode(rightEdge.edge, rightEdge.index, listOfEdges, targetNode, "right")
-        : null;
-    return leftRoute !== null && leftRoute !== void 0 ? leftRoute : rightRoute;
-}
-// can incorporate binary search?
-//             Starting Node
-//       Left Edge      Right Edge
-//    Left Edge             Right Edge
-// Package                      No Package
 function findEdgeOfNode(startingNode, listOfEdges, direction) {
     for (var i = 0; i < listOfEdges.length - 1; i++) {
         var edge = listOfEdges[i];
+        // edge --  < node > -- edge
+        // if finding the left edge, then it's on the edge's right i.e. node2 vice versa
         if (direction === "left") {
             if (edge.node2.name === startingNode.name) {
                 return { edge: edge, index: i };
@@ -92,19 +75,22 @@ function findEdgeOfNode(startingNode, listOfEdges, direction) {
     }
     return null;
 }
+function findLeftAndRightRouteToNode(leftEdge, rightEdge, listOfEdges, targetNode) {
+    var leftRoute = leftEdge
+        ? findRouteToNode(leftEdge.edge, leftEdge.index, listOfEdges, targetNode, "left")
+        : null;
+    var rightRoute = rightEdge
+        ? findRouteToNode(rightEdge.edge, rightEdge.index, listOfEdges, targetNode, "right")
+        : null;
+    return leftRoute !== null && leftRoute !== void 0 ? leftRoute : rightRoute;
+}
+// recursion to find a target node, given a direction and the starting edge to travel from
 function findRouteToNode(startingEdge, startingEdgeIndex, listOfEdges, targetNode, direction) {
     if (!startingEdge) {
         console.log("end");
         return null;
     }
-    console.log("going ", direction);
-    // start from train startingNode to pickUpNodeLocation
-    if (startingEdge.node1 === targetNode ||
-        startingEdge.node2 === targetNode
-    // (direction === "left" && startingEdge.node2 === targetNode) ||
-    // (direction === "right" && startingEdge.node1 === targetNode)
-    ) {
-        console.log("targetNode found", "in ", direction, startingEdge, targetNode);
+    if (startingEdge.node1 === targetNode || startingEdge.node2 === targetNode) {
         return [startingEdge];
     }
     // pre
@@ -118,70 +104,11 @@ function findRouteToNode(startingEdge, startingEdgeIndex, listOfEdges, targetNod
     }
     return found;
 }
-function findPackageIndexInNode(currentNode, listOfPackages) {
-    for (var i = 0; i < listOfPackages.length; i++) {
-        var currPackage = listOfPackages[i];
-        if (currPackage.startingNode.name === currentNode.name) {
-            return currPackage;
-        }
-    }
-    return null;
-}
-function generateNodes(n) {
-    var arr = [];
-    for (var i = 0; i < n; i++) {
-        var node = new Classes_1.Nodes("Station" + i);
-        arr.push(node);
-    }
-    return arr;
-}
-function generateEdges(nodes) {
-    var arr = [];
-    // no edge for last node
-    for (var i = 0; i < nodes.length; i++) {
-        var name_1 = "E" + i;
-        var edge = new Classes_1.Edge(name_1, nodes[i], nodes[i + 1], i);
-        arr.push(edge);
-    }
-    return arr;
-}
-function travelEdge(startingNode, index, listOfEdges, listOfPackages) {
-    // base case
-    if (index >= listOfNodes.length) {
-        console.log("end of node list");
-        return;
-    }
-    console.log("travelling at index:", index);
-    // pre
-    var currPackage = findPackageIndexInNode(startingNode, listOfPackages);
-    if (currPackage) {
-        console.log("package found!", currPackage);
-    }
-    // recurse
-    travelEdge(listOfEdges[index].node2, index + 1, listOfEdges, listOfPackages);
-    // post
-}
-function generateTrains(n, nodes) {
-    var arr = [];
-    for (var i = 0; i < n; i++) {
-        var train = new Classes_1.Train("Train" + 1, 50, nodes[i]);
-        arr.push(train);
-    }
-    return arr;
-}
-function generatePackages(n, nodes) {
-    var arr = [];
-    for (var i = 0; i < n; i++) {
-        var newPackage = new Classes_1.Package("Package" + i, 20, nodes[2], nodes[4]);
-        arr.push(newPackage);
-    }
-    return arr;
-}
-var listOfNodes = generateNodes(10);
-var listOfEdges = generateEdges(listOfNodes);
-var listOfTrains = generateTrains(1, listOfNodes);
+var listOfNodes = (0, Generators_1.generateNodes)(10);
+var listOfEdges = (0, Generators_1.generateEdges)(listOfNodes);
+var listOfTrains = (0, Generators_1.generateTrains)(1, listOfNodes);
 // const listOfPackages = generatePackages(1, listOfNodes);
 var listOfPackages = [
     new Classes_1.Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
 ];
-main(listOfNodes, listOfEdges, listOfTrains, listOfPackages);
+main(listOfEdges, listOfTrains, listOfPackages);
