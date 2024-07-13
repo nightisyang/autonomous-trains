@@ -1,13 +1,4 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 exports.__esModule = true;
 var Classes_1 = require("./Classes");
 var Generators_1 = require("./Generators");
@@ -46,11 +37,12 @@ function start(train, targetPackage, listOfEdges) {
     // TRAIN START -> PACKAGE START
     var _a = findLeftAndRightNodeEdges(train.startingNode, listOfEdges), trainLeftEdge = _a.leftEdge, trainRightEdge = _a.rightEdge;
     var trainRoute = findLeftAndRightRouteToNode(trainLeftEdge, trainRightEdge, listOfEdges, targetPackage.startingNode);
+    (0, Generators_1.generateLogs)(trainRoute, train);
     // PACKAGE START -> PACKAGE END
     var _b = findLeftAndRightNodeEdges(targetPackage.startingNode, listOfEdges), packageLeftEdge = _b.leftEdge, packageRightEdge = _b.rightEdge;
     var packageRoute = findLeftAndRightRouteToNode(packageLeftEdge, packageRightEdge, listOfEdges, targetPackage.destinationNode);
-    var completeRoute = __spreadArray(__spreadArray([], packageRoute, true), trainRoute, true);
-    console.log(completeRoute);
+    (0, Generators_1.generateLogs)(packageRoute, train, targetPackage);
+    var completeRoute = [];
 }
 function findLeftAndRightNodeEdges(startingNode, listOfEdges) {
     var leftEdge = findEdgeOfNode(startingNode, listOfEdges, "left");
@@ -77,38 +69,56 @@ function findEdgeOfNode(startingNode, listOfEdges, direction) {
 }
 function findLeftAndRightRouteToNode(leftEdge, rightEdge, listOfEdges, targetNode) {
     var leftRoute = leftEdge
-        ? findRouteToNode(leftEdge.edge, leftEdge.index, listOfEdges, targetNode, "left")
+        ? findRouteToNode(leftEdge.edge, leftEdge.index, listOfEdges, targetNode, "left", [])
         : null;
     var rightRoute = rightEdge
-        ? findRouteToNode(rightEdge.edge, rightEdge.index, listOfEdges, targetNode, "right")
+        ? findRouteToNode(rightEdge.edge, rightEdge.index, listOfEdges, targetNode, "right", [])
         : null;
     return leftRoute !== null && leftRoute !== void 0 ? leftRoute : rightRoute;
 }
 // recursion to find a target node, given a direction and the starting edge to travel from
-function findRouteToNode(startingEdge, startingEdgeIndex, listOfEdges, targetNode, direction) {
+function findRouteToNode(startingEdge, startingEdgeIndex, listOfEdges, targetNode, direction, route) {
     if (!startingEdge) {
         console.log("end");
         return null;
     }
+    startingEdge.direction = direction;
+    route.push(startingEdge);
     if (startingEdge.node1 === targetNode || startingEdge.node2 === targetNode) {
-        return [startingEdge];
+        return route;
     }
     // pre
     var nextEdgeIndex = direction === "left" ? startingEdgeIndex - 1 : startingEdgeIndex + 1;
     var nextEdge = listOfEdges[nextEdgeIndex];
     // recurse
-    var found = findRouteToNode(nextEdge, nextEdgeIndex, listOfEdges, targetNode, direction);
+    var found = findRouteToNode(nextEdge, nextEdgeIndex, listOfEdges, targetNode, direction, route);
     // post
     if (found) {
-        found.push(startingEdge);
+        return found;
     }
-    return found;
+    return null;
 }
-var listOfNodes = (0, Generators_1.generateNodes)(10);
-var listOfEdges = (0, Generators_1.generateEdges)(listOfNodes);
-var listOfTrains = (0, Generators_1.generateTrains)(1, listOfNodes);
-// const listOfPackages = generatePackages(1, listOfNodes);
-var listOfPackages = [
-    new Classes_1.Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
-];
-main(listOfEdges, listOfTrains, listOfPackages);
+function thereAndBackAgain() {
+    var listOfNodes = (0, Generators_1.generateNodes)(10);
+    var listOfEdges = (0, Generators_1.generateEdges)(listOfNodes);
+    var listOfTrains = (0, Generators_1.generateTrains)(1, listOfNodes);
+    // const listOfPackages = generatePackages(1, listOfNodes);
+    var listOfPackages = [
+        new Classes_1.Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
+    ];
+    main(listOfEdges, listOfTrains, listOfPackages);
+}
+function exampleGiven() {
+    var stationA = new Classes_1.Nodes("A");
+    var stationB = new Classes_1.Nodes("B");
+    var stationC = new Classes_1.Nodes("C");
+    var listOfEdges = [];
+    listOfEdges.push(new Classes_1.Edge("E1", stationA, stationB, 30));
+    listOfEdges.push(new Classes_1.Edge("E2", stationB, stationC, 10));
+    var listOfPackages = [];
+    listOfPackages.push(new Classes_1.Package("K1", 5, stationA, stationC));
+    var listOfTrains = [];
+    listOfTrains.push(new Classes_1.Train("Q1", 6, stationB, []));
+    main(listOfEdges, listOfTrains, listOfPackages);
+}
+exampleGiven();

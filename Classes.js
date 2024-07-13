@@ -19,11 +19,28 @@ var Edge = /** @class */ (function () {
 }());
 exports.Edge = Edge;
 var Train = /** @class */ (function () {
-    function Train(trainName, capacityInKg, startingNode) {
+    function Train(trainName, capacityInKg, startingNode, loadedPackages) {
         this.trainName = trainName;
         this.capacityInKg = capacityInKg;
         this.startingNode = startingNode;
+        this.loadedPackages = loadedPackages;
     }
+    Train.prototype.loadPackage = function (onePackage) {
+        if (onePackage.weightInKg <= this.capacityInKg) {
+            this.loadedPackages.push(onePackage);
+            this.capacityInKg = this.capacityInKg - onePackage.weightInKg;
+        }
+    };
+    Train.prototype.unLoadPackages = function (node) {
+        for (var i = this.loadedPackages.length - 1; i > 0; i--) {
+            var onePackage = this.loadedPackages[i];
+            if (node.name === onePackage.destinationNode.name) {
+                var removedPackage = this.loadedPackages.splice(i, 1);
+                this.capacityInKg = this.capacityInKg + removedPackage[0].weightInKg;
+                this.startingNode = removedPackage[0].destinationNode;
+            }
+        }
+    };
     return Train;
 }());
 exports.Train = Train;

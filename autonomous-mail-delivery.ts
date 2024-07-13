@@ -5,6 +5,7 @@ import {
   generateNodes,
   generatePackages,
   generateTrains,
+  generateLogs,
 } from "./Generators";
 
 //
@@ -59,6 +60,7 @@ function start(train: Train, targetPackage: Package, listOfEdges: Edge[]) {
     listOfEdges,
     targetPackage.startingNode
   ) as Edge[];
+  generateLogs(trainRoute, train);
 
   // PACKAGE START -> PACKAGE END
   const { leftEdge: packageLeftEdge, rightEdge: packageRightEdge } =
@@ -70,9 +72,9 @@ function start(train: Train, targetPackage: Package, listOfEdges: Edge[]) {
     listOfEdges,
     targetPackage.destinationNode
   ) as Edge[];
+  generateLogs(packageRoute, train, targetPackage);
 
-  const completeRoute = [...packageRoute, ...trainRoute];
-  console.log(completeRoute);
+  const completeRoute: Edge[] = [];
 }
 
 function findLeftAndRightNodeEdges(
@@ -125,7 +127,8 @@ function findLeftAndRightRouteToNode(
         leftEdge.index,
         listOfEdges,
         targetNode,
-        "left"
+        "left",
+        []
       )
     : null;
   const rightRoute = rightEdge
@@ -134,7 +137,8 @@ function findLeftAndRightRouteToNode(
         rightEdge.index,
         listOfEdges,
         targetNode,
-        "right"
+        "right",
+        []
       )
     : null;
 
@@ -147,15 +151,19 @@ function findRouteToNode(
   startingEdgeIndex: number,
   listOfEdges: Edge[],
   targetNode: Nodes,
-  direction: "left" | "right"
+  direction: "left" | "right",
+  route: Edge[]
 ): Edge[] | null {
   if (!startingEdge) {
     console.log("end");
     return null;
   }
 
+  startingEdge.direction = direction;
+  route.push(startingEdge);
+
   if (startingEdge.node1 === targetNode || startingEdge.node2 === targetNode) {
-    return [startingEdge];
+    return route;
   }
 
   // pre
@@ -169,24 +177,47 @@ function findRouteToNode(
     nextEdgeIndex,
     listOfEdges,
     targetNode,
-    direction
+    direction,
+    route
   );
 
   // post
   if (found) {
-    found.push(startingEdge);
+    return found;
   }
 
-  return found;
+  return null;
 }
 
-const listOfNodes = generateNodes(10);
-const listOfEdges = generateEdges(listOfNodes);
-const listOfTrains = generateTrains(1, listOfNodes);
-// const listOfPackages = generatePackages(1, listOfNodes);
+function thereAndBackAgain() {
+  const listOfNodes = generateNodes(10);
+  const listOfEdges = generateEdges(listOfNodes);
+  const listOfTrains = generateTrains(1, listOfNodes);
+  // const listOfPackages = generatePackages(1, listOfNodes);
 
-const listOfPackages = [
-  new Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
-];
+  const listOfPackages = [
+    new Package("Special Delivery", 10, listOfNodes[9], listOfNodes[5]),
+  ];
 
-main(listOfEdges, listOfTrains, listOfPackages);
+  main(listOfEdges, listOfTrains, listOfPackages);
+}
+
+function exampleGiven() {
+  const stationA = new Nodes("A");
+  const stationB = new Nodes("B");
+  const stationC = new Nodes("C");
+
+  const listOfEdges: Edge[] = [];
+  listOfEdges.push(new Edge("E1", stationA, stationB, 30));
+  listOfEdges.push(new Edge("E2", stationB, stationC, 10));
+
+  const listOfPackages: Package[] = [];
+  listOfPackages.push(new Package("K1", 5, stationA, stationC));
+
+  const listOfTrains: Train[] = [];
+  listOfTrains.push(new Train("Q1", 6, stationB, []));
+
+  main(listOfEdges, listOfTrains, listOfPackages);
+}
+
+exampleGiven();

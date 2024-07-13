@@ -26,7 +26,7 @@ export function generateTrains(n: number, nodes: Nodes[]) {
   const arr: Train[] = [];
 
   for (let i = 0; i < n; i++) {
-    const train = new Train("Train" + 1, 50, nodes[i]);
+    const train = new Train("Train" + 1, 50, nodes[i], []);
     arr.push(train);
   }
 
@@ -42,4 +42,38 @@ export function generatePackages(n: number, nodes: Nodes[]): Package[] {
   }
 
   return arr;
+}
+
+export function generateLogs(
+  route: Edge[],
+  train: Train,
+  targetpackage?: Package
+) {
+  for (let i = 0; i < route.length; i++) {
+    const currEdge = route[i];
+    const W = currEdge.journeyTimeInMinutes;
+    const T = train.trainName;
+    let N1 = "";
+    let N2 = "";
+    let P1 = "";
+    let P2 = "";
+
+    const isLeftDir = currEdge.direction === "left";
+    N1 = isLeftDir ? currEdge.node2.name : currEdge.node1.name;
+    N2 = isLeftDir ? currEdge.node1.name : currEdge.node2.name;
+
+    if (targetpackage && i === 0) {
+      P1 = targetpackage.packageName;
+    }
+
+    if (targetpackage && i === route.length - 1) {
+      P2 = targetpackage.packageName;
+    }
+
+    console.log(
+      `W=${W}, T=${T}, N1=${N1}, P1=[${P1 ?? "  "}], N2=${N2}, P2=[${
+        P2 ?? "  "
+      }]`
+    );
+  }
 }
