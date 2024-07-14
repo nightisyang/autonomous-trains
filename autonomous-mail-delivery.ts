@@ -60,7 +60,7 @@ function start(train: Train, targetPackage: Package, listOfEdges: Edge[]) {
     listOfEdges,
     targetPackage.startingNode
   ) as Edge[];
-  generateLogs(trainRoute, train);
+  const trainRouteDeepCopy = JSON.parse(JSON.stringify(trainRoute));
 
   // PACKAGE START -> PACKAGE END
   const { leftEdge: packageLeftEdge, rightEdge: packageRightEdge } =
@@ -72,9 +72,13 @@ function start(train: Train, targetPackage: Package, listOfEdges: Edge[]) {
     listOfEdges,
     targetPackage.destinationNode
   ) as Edge[];
-  generateLogs(packageRoute, train, targetPackage);
+  const packageRouteDeepCopy = JSON.parse(JSON.stringify(packageRoute));
 
-  const completeRoute: Edge[] = [];
+  const completeRoute: Edge[] = [
+    ...trainRouteDeepCopy,
+    ...packageRouteDeepCopy,
+  ];
+  generateLogs(completeRoute, train, targetPackage);
 }
 
 function findLeftAndRightNodeEdges(

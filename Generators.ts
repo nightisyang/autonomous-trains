@@ -47,7 +47,7 @@ export function generatePackages(n: number, nodes: Nodes[]): Package[] {
 export function generateLogs(
   route: Edge[],
   train: Train,
-  targetpackage?: Package
+  targetPackage: Package
 ) {
   for (let i = 0; i < route.length; i++) {
     const currEdge = route[i];
@@ -62,12 +62,12 @@ export function generateLogs(
     N1 = isLeftDir ? currEdge.node2.name : currEdge.node1.name;
     N2 = isLeftDir ? currEdge.node1.name : currEdge.node2.name;
 
-    if (targetpackage && i === 0) {
-      P1 = targetpackage.packageName;
+    if (targetPackage.startingNode.name === N1) {
+      P1 = targetPackage.packageName;
     }
 
-    if (targetpackage && i === route.length - 1) {
-      P2 = targetpackage.packageName;
+    if (targetPackage.destinationNode.name === N2) {
+      P2 = targetPackage.packageName;
     }
 
     console.log(

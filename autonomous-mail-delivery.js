@@ -1,4 +1,13 @@
 "use strict";
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 exports.__esModule = true;
 var Classes_1 = require("./Classes");
 var Generators_1 = require("./Generators");
@@ -37,12 +46,13 @@ function start(train, targetPackage, listOfEdges) {
     // TRAIN START -> PACKAGE START
     var _a = findLeftAndRightNodeEdges(train.startingNode, listOfEdges), trainLeftEdge = _a.leftEdge, trainRightEdge = _a.rightEdge;
     var trainRoute = findLeftAndRightRouteToNode(trainLeftEdge, trainRightEdge, listOfEdges, targetPackage.startingNode);
-    (0, Generators_1.generateLogs)(trainRoute, train);
+    var trainRouteDeepCopy = JSON.parse(JSON.stringify(trainRoute));
     // PACKAGE START -> PACKAGE END
     var _b = findLeftAndRightNodeEdges(targetPackage.startingNode, listOfEdges), packageLeftEdge = _b.leftEdge, packageRightEdge = _b.rightEdge;
     var packageRoute = findLeftAndRightRouteToNode(packageLeftEdge, packageRightEdge, listOfEdges, targetPackage.destinationNode);
-    (0, Generators_1.generateLogs)(packageRoute, train, targetPackage);
-    var completeRoute = [];
+    var packageRouteDeepCopy = JSON.parse(JSON.stringify(packageRoute));
+    var completeRoute = __spreadArray(__spreadArray([], trainRouteDeepCopy, true), packageRouteDeepCopy, true);
+    (0, Generators_1.generateLogs)(completeRoute, train, targetPackage);
 }
 function findLeftAndRightNodeEdges(startingNode, listOfEdges) {
     var leftEdge = findEdgeOfNode(startingNode, listOfEdges, "left");
