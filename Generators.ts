@@ -49,9 +49,9 @@ export function generateLogs(
   train: Train,
   targetPackage: Package
 ) {
+  let cummulativeTime = 0;
   for (let i = 0; i < route.length; i++) {
     const currEdge = route[i];
-    const W = currEdge.journeyTimeInMinutes;
     const T = train.trainName;
     let N1 = "";
     let N2 = "";
@@ -71,9 +71,13 @@ export function generateLogs(
     }
 
     console.log(
-      `W=${W}, T=${T}, N1=${N1}, P1=[${P1 ?? "  "}], N2=${N2}, P2=[${
-        P2 ?? "  "
-      }]`
+      `W=${cummulativeTime}, T=${T}, N1=${N1}, P1=[${
+        P1 ?? "  "
+      }], N2=${N2}, P2=[${P2 ?? "  "}]`
     );
+
+    cummulativeTime += currEdge.journeyTimeInMinutes;
   }
+
+  console.log(`Takes ${cummulativeTime} minutes in total.`);
 }

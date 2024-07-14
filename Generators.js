@@ -41,9 +41,9 @@ function generatePackages(n, nodes) {
 }
 exports.generatePackages = generatePackages;
 function generateLogs(route, train, targetPackage) {
+    var cummulativeTime = 0;
     for (var i = 0; i < route.length; i++) {
         var currEdge = route[i];
-        var W = currEdge.journeyTimeInMinutes;
         var T = train.trainName;
         var N1 = "";
         var N2 = "";
@@ -58,7 +58,9 @@ function generateLogs(route, train, targetPackage) {
         if (targetPackage.destinationNode.name === N2) {
             P2 = targetPackage.packageName;
         }
-        console.log("W=".concat(W, ", T=").concat(T, ", N1=").concat(N1, ", P1=[").concat(P1 !== null && P1 !== void 0 ? P1 : "  ", "], N2=").concat(N2, ", P2=[").concat(P2 !== null && P2 !== void 0 ? P2 : "  ", "]"));
+        console.log("W=".concat(cummulativeTime, ", T=").concat(T, ", N1=").concat(N1, ", P1=[").concat(P1 !== null && P1 !== void 0 ? P1 : "  ", "], N2=").concat(N2, ", P2=[").concat(P2 !== null && P2 !== void 0 ? P2 : "  ", "]"));
+        cummulativeTime += currEdge.journeyTimeInMinutes;
     }
+    console.log("Takes ".concat(cummulativeTime, " minutes in total."));
 }
 exports.generateLogs = generateLogs;
